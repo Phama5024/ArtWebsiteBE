@@ -22,4 +22,14 @@ public class ProductMediaController {
     ) {
         return productMediaService.uploadProductImage(id, file, isPrimary);
     }
+
+    @DeleteMapping("/images/{imageId}")
+    public void deleteImage(@PathVariable Long imageId) {
+        productMediaService.deleteImage(imageId);
+    }
+
+    @PutMapping("/images/{imageId}/primary")
+    public void setPrimary(@PathVariable Long imageId) {
+        productMediaService.setPrimary(imageId);
+    }
 }

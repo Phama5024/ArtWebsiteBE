@@ -8,6 +8,7 @@ import com.example.be.repository.product.ProductRepository;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductMediaServiceImpl implements ProductMediaService {
 
     private final ProductRepository productRepository;
@@ -25,22 +27,34 @@ public class ProductMediaServiceImpl implements ProductMediaService {
     private static final String UPLOAD_DIR = "uploads/products/";
 
     @Override
-    public ProductMediaDTO uploadProductImage(Long productId, MultipartFile file, boolean isPrimary) {
+    public ProductMediaDTO uploadProductImage(
+            Long productId,
+            MultipartFile file,
+            boolean isPrimary
+    ) {
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if ("LOCKED".equals(product.getStatus())) {
+            throw new RuntimeException("Sản phẩm đang bị khóa, không thể sửa ảnh");
+        }
 
         try {
             Files.createDirectories(Paths.get(UPLOAD_DIR));
 
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path filePath = Paths.get(UPLOAD_DIR + fileName);
+            Path filePath = Paths.get(UPLOAD_DIR, fileName);
             Files.write(filePath, file.getBytes());
 
+            if (isPrimary) {
+                mediaRepository.resetPrimary(productId);
+            }
+
             ProductMedia media = ProductMedia.builder()
+                    .product(product)
                     .imageUrl("/uploads/products/" + fileName)
                     .isPrimary(isPrimary)
-                    .product(product)
                     .build();
 
             ProductMedia saved = mediaRepository.save(media);
@@ -54,5 +68,23 @@ public class ProductMediaServiceImpl implements ProductMediaService {
         } catch (IOException e) {
             throw new RuntimeException("Upload failed", e);
         }
+    }
+
+    public void deleteImage(Long imageId) {
+        ProductMedia media = mediaRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+
+        mediaRepository.delete(media);
+    }
+
+    public void setPrimary(Long imageId) {
+        ProductMedia media = mediaRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+
+        Long productId = media.getProduct().getId();
+        mediaRepository.resetPrimary(productId);
+
+        media.setIsPrimary(true);
+        mediaRepository.save(media);
     }
 }
