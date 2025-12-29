@@ -7,8 +7,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "product_media")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProductMedia {
 
     @Id
