@@ -19,4 +19,9 @@ public class CategoryController {
     public List<CategoryResponseDTO> getAll() {
         return categoryService.getAll();
     }
+
+    @GetMapping("/with-thumbnail")
+    public List<CategoryResponseDTO> getAllWithThumbnail() {
+        return categoryService.getAllWithThumbnail();
+    }
 }

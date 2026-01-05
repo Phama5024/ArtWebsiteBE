@@ -51,6 +51,28 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 """)
     Page<Product> findAllActive(Pageable pageable);
 
+    @EntityGraph(attributePaths = {"categories", "mediaList"})
+    @Query("""
+        SELECT p FROM Product p
+        WHERE p.deleted = false
+    """)
+    Page<Product> findAllActiveWithMedia(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"categories", "mediaList"})
+    @Query("""
+        SELECT p
+        FROM Product p
+        WHERE p.deleted = false
+          AND EXISTS (
+              SELECT c FROM p.categories c
+              WHERE c.name = :category
+          )
+    """)
+    Page<Product> findByProductCategoryWithMedia(
+            @Param("category") String category,
+            Pageable pageable
+    );
+
     @Modifying
     @Transactional
     @Query("""
@@ -70,5 +92,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 """)
     void unlockMany(@Param("ids") List<Long> ids);
 
+    @EntityGraph(attributePaths = {"categories", "mediaList"})
+    @Query("""
+        SELECT p
+        FROM Product p
+        WHERE p.deleted = false
+          AND EXISTS (
+              SELECT c FROM p.categories c
+              WHERE c.name = :category
+          )
+    """)
+    List<Product> findTopActiveByCategoryWithMedia(
+            @Param("category") String category,
+            Pageable pageable
+    );
 
 }
