@@ -1,4 +1,4 @@
-package com.example.be.dto;
+package com.example.be.dto.cart;
 
 import lombok.Data;
 
@@ -10,4 +10,6 @@ public class CartItemDTO {
     private String productName;
     private BigDecimal price;
     private Integer quantity;
+    private String imageUrl;
+
 }
