@@ -1,6 +1,6 @@
 package com.example.be.controller.user;
 
-import com.example.be.dto.UserProfileDTO;
+import com.example.be.dto.user.UserProfileDTO;
 import com.example.be.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;

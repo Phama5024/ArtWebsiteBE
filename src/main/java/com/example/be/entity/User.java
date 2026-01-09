@@ -3,6 +3,7 @@ package com.example.be.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -27,8 +28,17 @@ public class User {
 
     private String phone;
 
+    // NEW
+    private String gender;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
     @Column(columnDefinition = "TEXT")
     private String address;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
 
     @Column(name = "is_verified")
     private Boolean isVerified = false;
@@ -38,7 +48,6 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // N-N roles
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",

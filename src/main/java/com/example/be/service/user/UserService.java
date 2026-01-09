@@ -1,6 +1,6 @@
 package com.example.be.service.user;
 
-import com.example.be.dto.UserProfileDTO;
+import com.example.be.dto.user.UserProfileDTO;
 import com.example.be.entity.User;
 import com.example.be.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,14 +24,14 @@ public class UserService {
                 user.getEmail(),
                 user.getFullName(),
                 user.getPhone(),
+                user.getGender(),
+                user.getDateOfBirth(),
+                user.getAvatarUrl(),
                 user.getAddress(),
                 user.getIsVerified(),
                 user.getStatus(),
                 user.getCreatedAt(),
-                user.getRoles()
-                        .stream()
-                        .map(role -> role.getName())
-                        .collect(Collectors.toSet())
+                user.getRoles().stream().map(r -> r.getName()).collect(Collectors.toSet())
         );
     }
 }
