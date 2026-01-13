@@ -1,5 +1,6 @@
 package com.example.be.controller.user;
 
+import com.example.be.dto.user.AdminUserOrderRowDTO;
 import com.example.be.dto.user.UpdateUserAdminRequestDTO;
 import com.example.be.dto.user.UploadAvatarResponseDTO;
 import com.example.be.dto.user.UserAdminDTO;
@@ -63,5 +64,10 @@ public class AdminUserController {
             @RequestParam("file") MultipartFile file
     ) throws Exception {
         return userAvatarService.adminUploadAvatar(id, file);
+    }
+
+    @GetMapping("/{id}/orders")
+    public Page<AdminUserOrderRowDTO> ordersOfUser(@PathVariable Long id, Pageable pageable) {
+        return adminUserService.getUserOrders(id, pageable);
     }
 }

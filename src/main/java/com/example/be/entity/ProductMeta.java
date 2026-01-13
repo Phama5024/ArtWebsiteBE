@@ -33,4 +33,19 @@ public class ProductMeta {
 
     @Column(name = "extra_info", columnDefinition = "TEXT")
     private String extraInfo;
+
+    @Column(name = "file_url", columnDefinition = "TEXT")
+    private String fileUrl;
+
+    @Column(name = "download_path", columnDefinition = "TEXT")
+    private String downloadPath;
+
+    @Column(name = "download_name")
+    private String downloadName;
+
+    @Column(name = "download_mime")
+    private String downloadMime;
+
+    @Column(name = "download_size")
+    private Long downloadSize;
 }

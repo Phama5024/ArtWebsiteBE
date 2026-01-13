@@ -32,7 +32,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         )
     """)
     Page<Product> findByProductCategory(
-            @Param("category") String category,
+        @Param("category") String category,
             Pageable pageable
     );
 

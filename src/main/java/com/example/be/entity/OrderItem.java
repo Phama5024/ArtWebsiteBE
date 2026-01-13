@@ -27,4 +27,10 @@ public class OrderItem {
 
     @Column(precision = 12, scale = 2)
     private BigDecimal price;
+
+    @Column(name = "download_path", columnDefinition = "TEXT")
+    private String downloadPath;
+
+    @Column(name = "download_name")
+    private String downloadName;
 }

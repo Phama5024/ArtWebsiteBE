@@ -1,9 +1,11 @@
 package com.example.be.service.user;
 
 
+import com.example.be.dto.user.AdminUserOrderRowDTO;
 import com.example.be.dto.user.UpdateUserAdminRequestDTO;
 import com.example.be.dto.user.UserAdminDTO;
 import com.example.be.entity.User;
+import com.example.be.repository.order.OrderRepository;
 import com.example.be.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -17,6 +19,8 @@ import java.util.stream.Collectors;
 public class AdminUserService {
 
     private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
+
 
     private UserAdminDTO toDto(User u) {
         return new UserAdminDTO(
@@ -34,13 +38,36 @@ public class AdminUserService {
                 u.getStatus(),
                 u.getCreatedAt(),
                 u.getRoles() == null ? null :
-                        u.getRoles().stream().map(r -> r.getName()).collect(Collectors.toSet())
+                        u.getRoles().stream().map(r -> r.getName()).collect(Collectors.toSet()),
+
+                null,
+                null
         );
     }
 
 
+
     public Page<UserAdminDTO> listUsers(String q, String status, Pageable pageable) {
-        return userRepository.adminFindUsers(q, status, pageable).map(this::toDto);
+        return userRepository.adminFindUsersWithStats(q, status, pageable)
+                .map(row -> new UserAdminDTO(
+                        row.getId(),
+                        row.getEmail(),
+                        row.getFullName(),
+                        row.getPhone(),
+                        row.getAddress(),
+
+                        row.getGender(),
+                        row.getDateOfBirth(),
+                        row.getAvatarUrl(),
+
+                        row.getIsVerified(),
+                        row.getStatus(),
+                        row.getCreatedAt(),
+                        null,
+
+                        row.getOrdersCount(),
+                        row.getTotalSpent()
+                ));
     }
 
     public UserAdminDTO getUser(Long id) {
@@ -93,4 +120,16 @@ public class AdminUserService {
 
         userRepository.delete(user);
     }
+
+    public Page<AdminUserOrderRowDTO> getUserOrders(Long userId, Pageable pageable) {
+        return orderRepository.findByUserIdAndDeletedFalse(userId, pageable)
+                .map(o -> new AdminUserOrderRowDTO(
+                        o.getId(),
+                        "#AA" + String.format("%08d", o.getId()),
+                        o.getCreatedAt(),
+                        o.getTotalAmount(),
+                        o.getStatus()
+                ));
+    }
+
 }

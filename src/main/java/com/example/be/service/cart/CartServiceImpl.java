@@ -157,4 +157,13 @@ public class CartServiceImpl implements CartService {
         cartDTO.setTotalAmount(total);
         return cartDTO;
     }
+
+    @Override
+    public void clearCart(String email) {
+        Cart cart = cartRepository.findByUserEmail(email)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+        cartItemRepository.deleteAllByCartId(cart.getId());
+    }
+
 }

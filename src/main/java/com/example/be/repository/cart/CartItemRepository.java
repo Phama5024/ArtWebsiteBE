@@ -2,6 +2,7 @@ package com.example.be.repository.cart;
 
 import com.example.be.entity.CartItem;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -23,4 +24,8 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 """)
     List<CartItem> findAllByCartIdFetchProductAndMedia(@Param("cartId") Long cartId);
 
+
+    @Modifying
+    @Query("delete from CartItem ci where ci.cart.id = :cartId")
+    void deleteAllByCartId(@Param("cartId") Long cartId);
 }
