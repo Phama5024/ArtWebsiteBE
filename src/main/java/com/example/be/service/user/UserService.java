@@ -15,7 +15,6 @@ public class UserService {
     private final UserRepository userRepository;
 
     public UserProfileDTO getUserProfile(String email) {
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -31,7 +30,14 @@ public class UserService {
                 user.getIsVerified(),
                 user.getStatus(),
                 user.getCreatedAt(),
-                user.getRoles().stream().map(r -> r.getName()).collect(Collectors.toSet())
+                user.getRoles().stream()
+                        .map(r -> r.getName())
+                        .collect(Collectors.toSet())
         );
+    }
+
+    public User getUserEntityByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

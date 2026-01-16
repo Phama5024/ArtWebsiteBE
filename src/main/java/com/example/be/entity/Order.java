@@ -46,6 +46,10 @@ public class Order {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Payment payment;
 
+    @OneToOne
+    @JoinColumn(name = "commission_request_id")
+    private CommissionRequest commissionRequest;
+
     @Column(nullable = false)
     private Boolean deleted = false;
 
