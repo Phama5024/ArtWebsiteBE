@@ -41,6 +41,10 @@ public class Post {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

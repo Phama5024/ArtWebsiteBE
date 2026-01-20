@@ -3,9 +3,11 @@ package com.example.be.service.commission;
 import com.example.be.dto.commission.*;
 import com.example.be.entity.*;
 import com.example.be.enums.CommissionStatus;
+import com.example.be.enums.NotificationType;
 import com.example.be.repository.commission.CommissionRequestRepository;
 import com.example.be.repository.order.OrderRepository;
 import com.example.be.repository.payment.PaymentRepository;
+import com.example.be.service.notifications.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +22,7 @@ public class CommissionService {
     private final CommissionRequestRepository requestRepo;
     private final OrderRepository orderRepo;
     private final PaymentRepository paymentRepo;
-
+    private final NotificationService notificationService;
 
     public CommissionRequestResponseDTO create(
             CommissionRequestDTO dto,
@@ -98,6 +100,19 @@ public class CommissionService {
         req.setStatus(CommissionStatus.CONFIRMED);
         requestRepo.save(req);
 
+        notificationService.create(
+                user.getId(),
+                null,
+                NotificationType.ORDER_CREATED,
+                "Tạo đơn hàng thành công",
+                "Bạn đã tạo đơn " + order.getId() + " từ commission.",
+                "/orders/" + order.getId(),
+                """
+                {"orderId":%d,"commissionRequestId":%d}
+                """.formatted(order.getId(), req.getId())
+        );
+
+
         return order;
     }
 
@@ -144,6 +159,18 @@ public class CommissionService {
         req.setStatus(CommissionStatus.APPROVED);
 
         requestRepo.save(req);
+
+        notificationService.create(
+                req.getUser().getId(),
+                seller.getId(),
+                NotificationType.COMMISSION_STATUS_CHANGED,
+                "Commission được duyệt",
+                "Yêu cầu " + req.getId() + " đã được duyệt. Giá cuối: " + finalPrice,
+                "/commissions/" + req.getId(),
+                """
+                {"commissionRequestId":%d,"status":"%s"}
+                """.formatted(req.getId(), req.getStatus().name())
+        );
     }
 
     public void reject(Long id, User seller) {
@@ -160,6 +187,19 @@ public class CommissionService {
         req.setStatus(CommissionStatus.REJECTED);
 
         requestRepo.save(req);
+
+        notificationService.create(
+                req.getUser().getId(),
+                seller.getId(),
+                NotificationType.COMMISSION_STATUS_CHANGED,
+                "Commission bị từ chối",
+                "Yêu cầu " + req.getId() + " đã bị từ chối.",
+                "/commissions/" + req.getId(),
+                """
+                {"commissionRequestId":%d,"status":"%s"}
+                """.formatted(req.getId(), req.getStatus().name())
+        );
+
     }
 
     private boolean isSeller(User user) {

@@ -1,0 +1,12 @@
+package com.example.be.enums;
+
+public enum NotificationType {
+    COMMISSION_NEW_REQUEST,
+    COMMISSION_STATUS_CHANGED,
+    ORDER_CREATED,
+    ORDER_STATUS_CHANGED,
+    PAYMENT_PAID,
+    PAYMENT_FAILED,
+    POST_NEW_COMMENT,
+    PRODUCT_NEW_REVIEW
+}

@@ -59,4 +59,9 @@ public class Product {
             fetch = FetchType.LAZY
     )
     private ProductMeta meta;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
 }
