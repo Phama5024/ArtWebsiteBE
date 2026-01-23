@@ -41,6 +41,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/payments/paypal/webhook").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/api/payments/vnpay/return").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/api/payments/vnpay/ipn").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/*/comments").permitAll()
@@ -62,6 +65,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/seller/**").hasRole("SELLER")
                         .requestMatchers("/api/users/**")
                         .hasAnyRole("USER", "ADMIN", "SELLER")
+
 
                         .anyRequest().authenticated()
                 )

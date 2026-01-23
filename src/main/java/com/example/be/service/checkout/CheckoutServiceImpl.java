@@ -91,7 +91,7 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         Payment payment = new Payment();
         payment.setOrder(savedOrder);
-        payment.setPaymentMethod(req.paymentMethod() == null ? "BANK" : req.paymentMethod());
+        payment.setPaymentMethod(req.paymentMethod() == null ? "BANK_QR" : req.paymentMethod().toUpperCase());
         payment.setPaymentStatus("PENDING");
         payment.setTransactionId(generateInvoiceCode(savedOrder.getId()));
         payment.setPaidAt(null);
