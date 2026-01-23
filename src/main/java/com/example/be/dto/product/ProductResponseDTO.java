@@ -19,4 +19,7 @@ public class ProductResponseDTO {
     private Set<String> categories;
 
     private String primaryImageUrl;
+
+    private Double ratingAvg;
+    private Long ratingCount;
 }

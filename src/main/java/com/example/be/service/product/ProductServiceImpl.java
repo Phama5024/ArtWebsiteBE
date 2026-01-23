@@ -124,6 +124,10 @@ public class ProductServiceImpl implements ProductService {
     private ProductResponseDTO mapToDTO(Product product) {
 
         String primaryImageUrl = null;
+        var summary = reviewService.getRatingSummary(product.getId());
+
+        double avg = summary == null ? 0.0 : (summary.getAverageRating() == null ? 0.0 : summary.getAverageRating());
+        long count = summary == null ? 0L : (long) summary.getTotalReviews();
 
         if (product.getMediaList() != null && !product.getMediaList().isEmpty()) {
             primaryImageUrl = product.getMediaList().stream()
@@ -147,7 +151,13 @@ public class ProductServiceImpl implements ProductService {
                                 .collect(Collectors.toSet())
                 )
                 .primaryImageUrl(primaryImageUrl)
+
+                // ✅ add
+                .ratingAvg(avg)
+                .ratingCount(count)
+
                 .build();
+
     }
 
 
