@@ -8,5 +8,6 @@ public enum NotificationType {
     PAYMENT_PAID,
     PAYMENT_FAILED,
     POST_NEW_COMMENT,
-    PRODUCT_NEW_REVIEW
+    PRODUCT_NEW_REVIEW,
+    CHAT_MESSAGE
 }

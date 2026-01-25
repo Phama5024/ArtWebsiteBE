@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/paypal/webhook").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/payments/vnpay/return").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/payments/vnpay/ipn").permitAll()
