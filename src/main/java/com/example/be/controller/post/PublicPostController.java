@@ -1,5 +1,7 @@
 package com.example.be.controller.post;
 
+import com.example.be.dto.post.PostListDTO;
+import com.example.be.dto.post.PostResponseDTO;
 import com.example.be.entity.Post;
 import com.example.be.service.post.PostService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,7 @@ public class PublicPostController {
     private final PostService postService;
 
     @GetMapping
-    public Page<Post> list(
+    public Page<PostListDTO> list(
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -23,7 +25,7 @@ public class PublicPostController {
     }
 
     @GetMapping("/{id}")
-    public Post detail(@PathVariable Long id) {
-        return postService.get(id);
+    public PostResponseDTO detail(@PathVariable Long id) {
+        return postService.getPublicDetail(id);
     }
 }

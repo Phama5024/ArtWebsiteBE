@@ -1,58 +1,58 @@
 package com.example.be.controller.post;
 
-import com.example.be.dto.post.PostListDTO;
 import com.example.be.dto.post.PostResponseDTO;
-import com.example.be.entity.Post;
 import com.example.be.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/admin/posts")
+@RequestMapping("/api/me/posts")
 @RequiredArgsConstructor
-public class AdminPostController {
+public class MyPostController {
 
     private final PostService postService;
 
     @PostMapping(consumes = {"multipart/form-data"})
-    public Post create(
+    public PostResponseDTO create(
+            Authentication auth,
             @RequestParam("title") String title,
-            @RequestParam("author_name") String authorName,
             @RequestParam(value = "content", required = false) String content,
             @RequestPart(value = "cover", required = false) MultipartFile cover
     ) throws Exception {
-        return postService.create(title, authorName, content, cover);
+        return postService.createMine(auth.getName(), title, content, cover);
     }
 
     @GetMapping
-    public Page<PostListDTO> list(
+    public Page<PostResponseDTO> list(
+            Authentication auth,
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return postService.list(keyword, page, size);
+        return postService.listMine(auth.getName(), keyword, page, size);
     }
 
     @GetMapping("/{id}")
-    public PostResponseDTO detail(@PathVariable Long id) {
-        return postService.getAdminDetail(id);
+    public PostResponseDTO detail(Authentication auth, @PathVariable Long id) {
+        return postService.getMine(auth.getName(), id);
     }
 
     @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
-    public Post update(
+    public PostResponseDTO update(
+            Authentication auth,
             @PathVariable Long id,
             @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "author_name", required = false) String authorName,
             @RequestParam(value = "content", required = false) String content,
             @RequestPart(value = "cover", required = false) MultipartFile cover
     ) throws Exception {
-        return postService.update(id, title, authorName, content, cover);
+        return postService.updateMine(auth.getName(), id, title, content, cover);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        postService.softDelete(id);
+    public void delete(Authentication auth, @PathVariable Long id) {
+        postService.softDeleteMine(auth.getName(), id);
     }
 }

@@ -1,11 +1,11 @@
 package com.example.be.dto.post;
 
-import lombok.Data;
-
+import lombok.*;
 import java.time.LocalDateTime;
 
-@Data
-public class PostResponseDTO {
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+public class PostListDTO {
     private Long id;
     private String title;
     private String authorName;
@@ -13,7 +13,6 @@ public class PostResponseDTO {
     private String coverImage;
     private String status;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     private Long userId;
     private String fullName;
