@@ -33,4 +33,14 @@ public class OrderItem {
 
     @Column(name = "download_name")
     private String downloadName;
+
+    @Column(name = "product_name_snapshot")
+    private String productNameSnapshot;
+
+    @Column(name = "thumbnail_url_snapshot", columnDefinition = "TEXT")
+    private String thumbnailUrlSnapshot;
+
+    @Column(name = "file_format_snapshot")
+    private String fileFormatSnapshot;
+
 }

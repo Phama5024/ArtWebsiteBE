@@ -72,6 +72,24 @@ public class CheckoutServiceImpl implements CheckoutService {
             oi.setProduct(p);
             oi.setQuantity(qty);
             oi.setPrice(price);
+            oi.setProductNameSnapshot(p.getName());
+
+            if (p.getMeta() != null) {
+                oi.setFileFormatSnapshot(p.getMeta().getFileFormat());
+
+                oi.setDownloadPath(p.getMeta().getDownloadPath());
+                oi.setDownloadName(p.getMeta().getDownloadName());
+            }
+
+            String thumb = null;
+            if (p.getMediaList() != null) {
+                thumb = p.getMediaList().stream()
+                        .filter(pm -> Boolean.TRUE.equals(pm.getIsPrimary()))
+                        .map(ProductMedia::getImageUrl)
+                        .findFirst()
+                        .orElse(null);
+            }
+            oi.setThumbnailUrlSnapshot(thumb);
 
             if (p.getMeta() != null) {
                 oi.setDownloadPath(p.getMeta().getDownloadPath());
