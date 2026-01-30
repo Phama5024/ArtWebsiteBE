@@ -40,46 +40,46 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                .requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/ws/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/payments/paypal/webhook").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/return").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/ipn").permitAll()
-                                .requestMatchers("/uploads/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/posts/*/comments").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/posts/*/comments").authenticated()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/payments/paypal/webhook").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/return").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/ipn").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/*/comments").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/posts/*/comments").authenticated()
 
-                                .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
-                                .requestMatchers("/api/me/posts/**").hasAnyRole("USER", "SELLER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                        .requestMatchers("/api/me/posts/**").hasAnyRole("USER", "SELLER", "ADMIN")
 
-                                .requestMatchers(HttpMethod.POST, "/api/products/*/favorite").authenticated()
-                                .requestMatchers(HttpMethod.DELETE, "/api/products/*/favorite").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/products/*/favorite").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/*/favorite").authenticated()
 
-                                .requestMatchers(HttpMethod.POST, "/api/products/*/reviews").authenticated()
-                                .requestMatchers(HttpMethod.DELETE, "/api/products/*/reviews").authenticated()
-
-
-                                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
-
-                                .requestMatchers(HttpMethod.POST, "/api/products/**")
-                                .hasAnyRole("ADMIN", "SELLER")
-                                .requestMatchers(HttpMethod.PUT, "/api/products/**")
-                                .hasAnyRole("ADMIN", "SELLER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/products/**")
-                                .hasAnyRole("ADMIN", "SELLER")
-
-                                .requestMatchers("/api/users/me").authenticated()
-                                .requestMatchers("/api/notifications/**").authenticated()
-                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/api/seller/**").hasRole("SELLER")
-                                .requestMatchers("/api/users/**")
-                                .hasAnyRole("USER", "ADMIN", "SELLER")
+                        .requestMatchers(HttpMethod.POST, "/api/products/*/reviews").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/*/reviews").authenticated()
 
 
-                                .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/products/**")
+                        .hasAnyRole("ADMIN", "SELLER")
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**")
+                        .hasAnyRole("ADMIN", "SELLER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**")
+                        .hasAnyRole("ADMIN", "SELLER")
+
+                        .requestMatchers("/api/users/me").authenticated()
+                        .requestMatchers("/api/notifications/**").authenticated()
+                        .requestMatchers("/api/admin/posts/**").hasAnyRole("ADMIN", "SELLER")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN").requestMatchers("/api/seller/**").hasRole("SELLER")
+                        .requestMatchers("/api/users/**")
+                        .hasAnyRole("USER", "ADMIN", "SELLER")
+
+
+                        .anyRequest().authenticated()
                 )
 
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
