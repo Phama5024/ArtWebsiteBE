@@ -165,7 +165,7 @@ public class CommissionService {
                 seller.getId(),
                 NotificationType.COMMISSION_STATUS_CHANGED,
                 "Commission được duyệt",
-                "Yêu cầu " + req.getId() + " đã được duyệt. Giá cuối: " + finalPrice,
+                "Yêu cầu " + req.getId() + " đã được duyệt",
                 "/commissions/" + req.getId(),
                 """
                 {"commissionRequestId":%d,"status":"%s"}
