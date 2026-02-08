@@ -14,6 +14,9 @@ import com.example.be.service.cart.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.be.entity.CommissionRequest;
+import com.example.be.enums.CommissionStatus;
+import com.example.be.repository.commission.CommissionRequestRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -27,6 +30,8 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final CartService cartService;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final CommissionRequestRepository commissionRequestRepository;
+
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -157,4 +162,63 @@ public class CheckoutServiceImpl implements CheckoutService {
     private String generateInvoiceCode(Long orderId) {
         return "HD" + String.format("%06d", orderId);
     }
+
+    @Override
+    public OrderSummaryDTO checkoutFromCommission(String email, Long commissionRequestId, CheckoutRequestDTO req) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        CommissionRequest cr = commissionRequestRepository.findById(commissionRequestId)
+                .orElseThrow(() -> new RuntimeException("Commission not found"));
+
+        if (cr.getUser() == null || cr.getUser().getId() == null || !cr.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Forbidden");
+        }
+
+        if (cr.getStatus() != CommissionStatus.APPROVED) {
+            throw new RuntimeException("Commission not approved");
+        }
+
+        if (cr.getTotalPrice() == null) {
+            throw new RuntimeException("Commission totalPrice is missing (seller chưa set giá?)");
+        }
+        if (cr.getTotalPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Commission totalPrice must be > 0");
+        }
+
+        if (orderRepository.existsByCommissionRequestId(commissionRequestId)) {
+            throw new RuntimeException("Order already created for this commission");
+        }
+
+        Order order = new Order();
+        order.setUser(user);
+        order.setStatus(OrderStatus.PENDING);
+        order.setReceiverName(req.receiverName());
+        order.setReceiverPhone(req.receiverPhone());
+        order.setShippingAddress(req.shippingAddress());
+        order.setCreatedAt(LocalDateTime.now());
+        order.setItems(new ArrayList<>());
+        order.setCommissionRequest(cr);
+
+        order.setTotalAmount(cr.getTotalPrice());
+
+        Order savedOrder = orderRepository.save(order);
+
+        Payment payment = new Payment();
+        payment.setOrder(savedOrder);
+        payment.setPaymentMethod(req.paymentMethod() == null ? "BANK_QR" : req.paymentMethod().toUpperCase());
+        payment.setPaymentStatus("PENDING");
+        payment.setTransactionId(generateInvoiceCode(savedOrder.getId()));
+        payment.setPaidAt(null);
+
+        paymentRepository.save(payment);
+        savedOrder.setPayment(payment);
+
+        cr.setStatus(CommissionStatus.CONFIRMED);
+        commissionRequestRepository.save(cr);
+
+        return toSummary(savedOrder, payment);
+    }
+
+
 }

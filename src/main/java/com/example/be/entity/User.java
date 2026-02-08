@@ -6,12 +6,15 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -29,7 +32,6 @@ public class User {
 
     private String phone;
 
-    // NEW
     private String gender;
 
     @Column(name = "date_of_birth")
@@ -49,6 +51,9 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(name = "token_version", nullable = false)
+    private Integer tokenVersion = 0;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
@@ -56,5 +61,5 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     @JsonManagedReference
-    private Set<Role> roles;
+    private Set<Role> roles = new HashSet<>();
 }

@@ -20,17 +20,14 @@ public class SellerCommissionController {
     private final UserService userService;
 
     @GetMapping
-    public List<CommissionRequestResponseDTO> pending() {
+    public List<CommissionRequestResponseDTO> listAll() {
         String email = SecurityUtils.getCurrentEmail();
         User seller = userService.getUserEntityByEmail(email);
-        return service.getPendingForSeller(seller);
+        return service.getAllForSeller(seller);
     }
 
     @PostMapping("/{id}/approve")
-    public void approve(
-            @PathVariable Long id,
-            @RequestBody ApproveCommissionDTO dto
-    ) {
+    public void approve(@PathVariable Long id, @RequestBody ApproveCommissionDTO dto) {
         String email = SecurityUtils.getCurrentEmail();
         User seller = userService.getUserEntityByEmail(email);
         service.approve(id, dto.getFinalPrice(), seller);
@@ -43,3 +40,4 @@ public class SellerCommissionController {
         service.reject(id, seller);
     }
 }
+    

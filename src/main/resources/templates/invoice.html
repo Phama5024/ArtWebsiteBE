@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        body { font-family: "Noto Sans", DejaVu Sans, Arial, sans-serif; font-size: 12px; }
+        .row { display: flex; justify-content: space-between; align-items: flex-start; }
+        .title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .muted { color: #666; }
+        .mt { margin-top: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+        th { background: #f5f5f5; text-align: left; }
+        .right { text-align: right; }
+    </style>
+</head>
+
+<body>
+<div class="row">
+    <div>
+        <div class="title">HÓA ĐƠN</div>
+        <div class="muted" th:text="'Mã đơn: ' + ${order.orderCode}"></div>
+        <div class="muted" th:text="'Ngày tạo: ' + ${createdAtText}"></div>
+        <div class="muted" th:if="${order.status != null}" th:text="'Trạng thái đơn: ' + ${order.status}"></div>
+    </div>
+
+    <div>
+        <div><b>MariaStore</b></div>
+        <div class="muted">Địa chỉ shop...</div>
+        <div class="muted">Hotline...</div>
+    </div>
+</div>
+
+<div class="mt">
+    <div><b>Thông tin giao hàng</b></div>
+    <div th:text="'Người nhận: ' + ${order.receiverName}"></div>
+    <div th:text="'SĐT: ' + ${order.receiverPhone}"></div>
+    <div th:text="'Địa chỉ: ' + ${order.shippingAddress}"></div>
+</div>
+
+<div class="mt">
+    <div><b>Thanh toán</b></div>
+    <div th:text="'Phương thức: ' + ${order.paymentMethod}"></div>
+    <div th:if="${order.invoiceCode != null}" th:text="'Mã giao dịch: ' + ${order.invoiceCode}"></div>
+    <div th:text="'Trạng thái: ' + ${order.paymentStatus}"></div>
+    <div th:if="${order.paidAt != null}" th:text="'Thanh toán lúc: ' + ${paidAtText}"></div>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th style="width:44%;">Sản phẩm</th>
+        <th style="width:16%;">Định dạng</th>
+        <th class="right" style="width:10%;">SL</th>
+        <th class="right" style="width:15%;">Đơn giá</th>
+        <th class="right" style="width:15%;">Thành tiền</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="it : ${items}">
+        <td th:text="${it.productName}"></td>
+        <td th:text="${it.fileFormat}"></td>
+        <td class="right" th:text="${it.quantity}"></td>
+        <td class="right" th:text="${it.unitPriceText}"></td>
+        <td class="right" th:text="${it.lineTotalText}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="mt row">
+    <div></div>
+    <div>
+        <div class="row" style="gap:16px;">
+            <div><b>Tổng cộng</b></div>
+            <div class="right" th:text="${totalAmountText}"></div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

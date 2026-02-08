@@ -28,4 +28,14 @@ public class CheckoutController {
         String email = authentication.getName();
         return checkoutService.getOrderSummary(email, orderId);
     }
+
+    @PostMapping("/checkout/commission/{commissionRequestId}")
+    public OrderSummaryDTO checkoutCommission(
+            Authentication authentication,
+            @PathVariable Long commissionRequestId,
+            @Valid @RequestBody CheckoutRequestDTO req
+    ) {
+        String email = authentication.getName();
+        return checkoutService.checkoutFromCommission(email, commissionRequestId, req);
+    }
 }

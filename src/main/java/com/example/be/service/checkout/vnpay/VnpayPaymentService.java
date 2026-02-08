@@ -1,9 +1,12 @@
 package com.example.be.service.checkout.vnpay;
 
+import com.example.be.entity.CommissionRequest;
 import com.example.be.entity.Order;
 import com.example.be.entity.Payment;
+import com.example.be.enums.CommissionStatus;
 import com.example.be.enums.NotificationType;
 import com.example.be.enums.OrderStatus;
+import com.example.be.repository.commission.CommissionRequestRepository;
 import com.example.be.repository.order.OrderRepository;
 import com.example.be.repository.payment.PaymentRepository;
 import com.example.be.service.cart.CartService;
@@ -17,10 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class VnpayPaymentService {
 
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
+    private final CommissionRequestRepository commissionRequestRepository; // ✅ add
     private final VnpaySigner signer;
 
     private final CartService cartService;
@@ -39,7 +43,6 @@ public class VnpayPaymentService {
     @Value("${vnpay.pay-url}") private String payUrl;
     @Value("${vnpay.return-url}") private String returnUrl;
     @Value("${vnpay.version}") private String version;
-
 
     private static String vnpEncode(String s) {
         return URLEncoder.encode(s == null ? "" : s, StandardCharsets.UTF_8);
@@ -83,7 +86,6 @@ public class VnpayPaymentService {
         vnp.put("vnp_CreateDate", createDate);
         vnp.put("vnp_ExpireDate", expireDate);
 
-
         StringBuilder hashData = new StringBuilder();
         StringBuilder query = new StringBuilder();
 
@@ -102,8 +104,7 @@ public class VnpayPaymentService {
         }
 
         String secureHash = signer.hmacSha512Hex(hashSecret.trim(), hashData.toString());
-        String url = payUrl + "?" + query + "&vnp_SecureHash=" + secureHash;
-        return url;
+        return payUrl + "?" + query + "&vnp_SecureHash=" + secureHash;
     }
 
     public void handleCallback(Map<String, String> params) {
@@ -137,12 +138,17 @@ public class VnpayPaymentService {
         Order o = p.getOrder();
         o.setStatus(OrderStatus.COMPLETED);
 
+        if (o.getCommissionRequest() != null) {
+            CommissionRequest cr = o.getCommissionRequest();
+            cr.setStatus(CommissionStatus.PAID);
+            commissionRequestRepository.save(cr);
+        }
+
         paymentRepository.save(p);
         orderRepository.save(o);
 
-        Long recipientId = o.getUser().getId();
         notificationService.create(
-                recipientId,
+                o.getUser().getId(),
                 null,
                 NotificationType.PAYMENT_PAID,
                 "Thanh toán thành công",
@@ -151,7 +157,9 @@ public class VnpayPaymentService {
                 "{\"orderId\":" + o.getId() + ",\"paymentId\":" + p.getId() + ",\"status\":\"PAID\"}"
         );
 
-        cartService.clearCart(o.getUser().getEmail());
+        if (o.getCommissionRequest() == null) {
+            cartService.clearCart(o.getUser().getEmail());
+        }
     }
 
     private String toJsonSafe(Map<String, String> params) {

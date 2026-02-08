@@ -13,8 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,8 @@ public class AdminOrderService {
 
     private final OrderRepository orderRepo;
     private final OrderItemRepository itemRepo;
+
+    private final InvoicePdfGenerator invoicePdfGenerator;
 
     public Page<AdminOrderRowDTO> paged(int page, int size, String sort, String keyword, OrderStatus status) {
         Pageable pageable = PageRequest.of(Math.max(0, page - 1), Math.max(1, size), parseSort(sort));
@@ -45,7 +48,6 @@ public class AdminOrderService {
         if (Boolean.TRUE.equals(o.getDeleted())) throw new RuntimeException("Order deleted");
 
         var items = itemRepo.findAdminItems(id);
-
         var p = o.getPayment();
 
         return new AdminOrderDetailDTO(
@@ -58,7 +60,7 @@ public class AdminOrderService {
                 o.getReceiverPhone(),
                 o.getShippingAddress(),
 
-                p == null ? null : p.getTransactionId(),
+                p == null ? null : p.getTransactionId(), // invoiceCode bạn đang dùng transactionId
                 p == null ? null : p.getPaymentMethod(),
                 p == null ? null : p.getPaymentStatus(),
                 p == null ? null : p.getPaidAt(),
@@ -66,6 +68,63 @@ public class AdminOrderService {
                 items
         );
     }
+
+    public byte[] generateInvoicePdf(Long id) {
+        AdminOrderDetailDTO detail = detail(id);
+
+        var dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        String createdAtText = detail.createdAt() == null ? "" : detail.createdAt().format(dtf);
+        String paidAtText = detail.paidAt() == null ? "" : detail.paidAt().format(dtf);
+
+        String totalAmountText = moneyVn(detail.totalAmount());
+
+        List<InvoiceItemVM> items = (detail.items() == null ? List.<com.example.be.dto.order.AdminOrderItemDTO>of() : detail.items())
+                .stream()
+                .map(it -> {
+                    String unitPriceText = moneyVn(it.unitPrice());
+                    java.math.BigDecimal lineTotal = lineTotal(it.unitPrice(), it.quantity());
+                    String lineTotalText = moneyVn(lineTotal);
+                    return new InvoiceItemVM(
+                            it.productName(),
+                            it.fileFormat(),
+                            it.quantity(),
+                            unitPriceText,
+                            lineTotalText
+                    );
+                })
+                .toList();
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("order", detail);
+        model.put("createdAtText", createdAtText);
+        model.put("paidAtText", paidAtText);
+        model.put("totalAmountText", totalAmountText);
+        model.put("items", items);
+
+        return invoicePdfGenerator.generate("invoice", model);
+    }
+
+    private java.math.BigDecimal lineTotal(java.math.BigDecimal unitPrice, Integer qty) {
+        if (unitPrice == null || qty == null) return java.math.BigDecimal.ZERO;
+        return unitPrice.multiply(java.math.BigDecimal.valueOf(qty));
+    }
+
+    private String moneyVn(java.math.BigDecimal amount) {
+        if (amount == null) return "";
+        java.text.NumberFormat nf = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
+        return nf.format(amount) + " VND";
+    }
+
+    private static record InvoiceItemVM(
+            String productName,
+            String fileFormat,
+            Integer quantity,
+            String unitPriceText,
+            String lineTotalText
+    ) {}
+
+
 
     @Transactional
     public void update(Long id, AdminOrderUpdateRequestDTO req) {

@@ -1,9 +1,12 @@
 package com.example.be.service.checkout.paypal;
 
+import com.example.be.entity.CommissionRequest;
 import com.example.be.entity.Order;
 import com.example.be.entity.Payment;
+import com.example.be.enums.CommissionStatus;
 import com.example.be.enums.NotificationType;
 import com.example.be.enums.OrderStatus;
+import com.example.be.repository.commission.CommissionRequestRepository;
 import com.example.be.repository.order.OrderRepository;
 import com.example.be.repository.payment.PaymentRepository;
 import com.example.be.service.cart.CartService;
@@ -27,6 +30,7 @@ public class PaypalFlowService {
     private final PaypalHttpClient paypalHttpClient;
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
+    private final CommissionRequestRepository commissionRequestRepository; // ✅ add
 
     private final CartService cartService;
     private final NotificationService notificationService;
@@ -37,6 +41,7 @@ public class PaypalFlowService {
     @Value("${paypal.currency:USD}") private String currency;
 
     private static final BigDecimal VND_PER_USD = new BigDecimal("26000");
+
     public String init(String email, Long orderId) {
         Order o = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -70,13 +75,16 @@ public class PaypalFlowService {
 
         String amount = usdAmount.toPlainString();
 
+        String returnUrlWithOrderId = appendQueryParam(returnUrl, "orderId", String.valueOf(orderId));
+        String cancelUrlWithOrderId = appendQueryParam(cancelUrl, "orderId", String.valueOf(orderId));
+
         JsonNode json = paypalHttpClient.createOrder(
                 token,
                 invoiceId,
                 "USD",
                 amount,
-                returnUrl,
-                cancelUrl
+                returnUrlWithOrderId,
+                cancelUrlWithOrderId
         );
 
         String paypalOrderId = json.get("id").asText();
@@ -96,11 +104,20 @@ public class PaypalFlowService {
         return approveUrl;
     }
 
+    private static String appendQueryParam(String url, String key, String value) {
+        if (url == null || url.isBlank()) return url;
+        String sep = url.contains("?") ? "&" : "?";
+        return url + sep + key + "=" + value;
+    }
+
+
     public void capture(String email, Long orderId) {
-        Order o = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        Order o = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
         if (!o.getUser().getEmail().equalsIgnoreCase(email)) throw new RuntimeException("Forbidden");
 
-        Payment p = paymentRepository.findByOrderId(orderId).orElseThrow(() -> new RuntimeException("Payment not found"));
+        Payment p = paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new RuntimeException("Payment not found"));
         if ("PAID".equalsIgnoreCase(p.getPaymentStatus())) return;
 
         if (p.getProviderRef() == null) throw new RuntimeException("PayPal order id missing");
@@ -152,12 +169,17 @@ public class PaypalFlowService {
         Order o = p.getOrder();
         o.setStatus(OrderStatus.COMPLETED);
 
+        if (o.getCommissionRequest() != null) {
+            CommissionRequest cr = o.getCommissionRequest();
+            cr.setStatus(CommissionStatus.PAID);
+            commissionRequestRepository.save(cr);
+        }
+
         paymentRepository.save(p);
         orderRepository.save(o);
 
-        Long recipientId = o.getUser().getId();
         notificationService.create(
-                recipientId,
+                o.getUser().getId(),
                 null,
                 NotificationType.PAYMENT_PAID,
                 "Thanh toán thành công",
@@ -166,6 +188,8 @@ public class PaypalFlowService {
                 "{\"orderId\":" + o.getId() + ",\"paymentId\":" + p.getId() + ",\"status\":\"PAID\"}"
         );
 
-        cartService.clearCart(o.getUser().getEmail());
+        if (o.getCommissionRequest() == null) {
+            cartService.clearCart(o.getUser().getEmail());
+        }
     }
 }

@@ -11,7 +11,6 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    // ⚠️ BẮT BUỘC ≥ 32 ký tự (256 bits)
     private static final String SECRET_KEY =
             "my-secret-key-very-strong-and-long-enough-256bits";
 
@@ -23,14 +22,19 @@ public class JwtService {
         );
     }
 
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, String role, Integer tokenVersion) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
+                .claim("tv", tokenVersion)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String generateToken(String email, String role) {
+        return generateToken(email, role, 0);
     }
 
     public String extractEmail(String token) {
@@ -39,6 +43,10 @@ public class JwtService {
 
     public String extractRole(String token) {
         return getClaims(token).get("role", String.class);
+    }
+
+    public Integer extractTokenVersion(String token) {
+        return getClaims(token).get("tv", Integer.class);
     }
 
     public boolean isTokenValid(String token) {

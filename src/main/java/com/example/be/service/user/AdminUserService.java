@@ -1,6 +1,7 @@
 package com.example.be.service.user;
 
 
+import com.example.be.dto.user.AdminUserListRowDTO;
 import com.example.be.dto.user.AdminUserOrderRowDTO;
 import com.example.be.dto.user.UpdateUserAdminRequestDTO;
 import com.example.be.dto.user.UserAdminDTO;
@@ -71,11 +72,36 @@ public class AdminUserService {
     }
 
     public UserAdminDTO getUser(Long id) {
-        User user = userRepository.findById(id)
+        AdminUserListRowDTO row = userRepository.adminFindUserWithStatsById(id);
+        if (row == null) throw new RuntimeException("User not found");
+
+        User user = userRepository.findWithRolesById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        user.getRoles().size();
-        return toDto(user);
+
+        return new UserAdminDTO(
+                row.getId(),
+                row.getEmail(),
+                row.getFullName(),
+                row.getPhone(),
+                row.getAddress(),
+
+                row.getGender(),
+                row.getDateOfBirth(),
+                row.getAvatarUrl(),
+
+                row.getIsVerified(),
+                row.getStatus(),
+                row.getCreatedAt(),
+
+                user.getRoles() == null ? null :
+                        user.getRoles().stream().map(r -> r.getName()).collect(java.util.stream.Collectors.toSet()),
+
+                row.getOrdersCount(),
+                row.getTotalSpent()
+        );
     }
+
+
 
     @Transactional
     public UserAdminDTO updateUser(Long id, UpdateUserAdminRequestDTO req) {

@@ -26,5 +26,9 @@ public class CommissionCharacter {
 
     private Integer characterIndex;
     private String poseScope;
+
+    @Column(name = "background")
+    private String background;
+
     private BigDecimal extraPrice;
 }

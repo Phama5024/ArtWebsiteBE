@@ -1,10 +1,12 @@
 package com.example.be.controller.commission;
 
+import com.example.be.dto.checkout.CheckoutRequestDTO;
+import com.example.be.dto.checkout.OrderSummaryDTO;
 import com.example.be.dto.commission.CommissionRequestDTO;
 import com.example.be.dto.commission.CommissionRequestResponseDTO;
-import com.example.be.entity.Order;
 import com.example.be.entity.User;
 import com.example.be.security.util.SecurityUtils;
+import com.example.be.service.checkout.CheckoutService;
 import com.example.be.service.commission.CommissionService;
 import com.example.be.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ public class CommissionController {
 
     private final CommissionService service;
     private final UserService userService;
+    private final CheckoutService checkoutService;
 
     @GetMapping("/my")
     public List<CommissionRequestResponseDTO> myRequests() {
@@ -27,11 +30,18 @@ public class CommissionController {
     }
 
     @PostMapping
-    public CommissionRequestResponseDTO create(
+    public CommissionRequestResponseDTO create(@RequestBody CommissionRequestDTO dto) {
+        User user = getCurrentUser();
+        return service.create(dto, user);
+    }
+
+    @PutMapping("/{id}")
+    public CommissionRequestResponseDTO updateDraft(
+            @PathVariable Long id,
             @RequestBody CommissionRequestDTO dto
     ) {
         User user = getCurrentUser();
-        return service.create(dto, user);
+        return service.updateDraft(id, dto, user);
     }
 
     @PostMapping("/{id}/submit")
@@ -41,9 +51,12 @@ public class CommissionController {
     }
 
     @PostMapping("/{id}/checkout")
-    public Order checkout(@PathVariable Long id) {
+    public OrderSummaryDTO checkout(
+            @PathVariable Long id,
+            @RequestBody CheckoutRequestDTO req
+    ) {
         User user = getCurrentUser();
-        return service.checkout(id, user);
+        return checkoutService.checkoutFromCommission(user.getEmail(), id, req);
     }
 
     @PostMapping("/{id}/cancel")

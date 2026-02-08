@@ -75,9 +75,14 @@ public class CommissionDeliverableService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Forbidden");
         }
 
+        if (req.getStatus() != CommissionStatus.PAID) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Deliverables are locked until payment is completed");
+        }
+
         return deliverableRepo.findByCommissionRequestIdOrderByCreatedAtDesc(requestId)
                 .stream().map(this::toDto).toList();
     }
+
 
     public List<CommissionDeliverableResponseDTO> listForSeller(Long requestId, User seller) {
         checkSeller(seller);

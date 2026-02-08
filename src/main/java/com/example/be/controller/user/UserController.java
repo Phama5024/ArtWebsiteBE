@@ -1,5 +1,7 @@
 package com.example.be.controller.user;
 
+import com.example.be.dto.user.ChangeMyPasswordRequestDTO;
+import com.example.be.dto.user.ChangePasswordResponseDTO;
 import com.example.be.dto.user.UpdateMyProfileRequestDTO;
 import com.example.be.dto.user.UserProfileDTO;
 import com.example.be.service.user.UserService;
@@ -27,5 +29,14 @@ public class UserController {
     ) {
         String email = authentication.getName();
         return userService.updateMyProfile(email, request);
+    }
+
+    @PutMapping("/me/change-password")
+    public ChangePasswordResponseDTO changeMyPassword(
+            Authentication authentication,
+            @RequestBody ChangeMyPasswordRequestDTO request
+    ) {
+        String email = authentication.getName();
+        return userService.changeMyPassword(email, request);
     }
 }

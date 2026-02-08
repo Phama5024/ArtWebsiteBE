@@ -8,5 +8,6 @@ import java.math.BigDecimal;
 public class CommissionCharacterResponseDTO {
     private Integer characterIndex;
     private String poseScope;
+    private String background;
     private BigDecimal extraPrice;
 }

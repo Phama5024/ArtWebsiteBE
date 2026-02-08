@@ -72,4 +72,33 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("orderId") Long orderId,
             @Param("email") String email
     );
+
+    @Query("""
+    select coalesce(sum(o.totalAmount), 0)
+    from Order o
+    where o.deleted = false
+      and o.status = com.example.be.enums.OrderStatus.COMPLETED
+      and (:from is null or o.createdAt >= :from)
+      and (:to is null or o.createdAt < :to)
+""")
+    java.math.BigDecimal sumRevenueCompletedInRange(
+            @Param("from") java.time.LocalDateTime from,
+            @Param("to") java.time.LocalDateTime to
+    );
+
+    @Query("""
+    select coalesce(count(o.id), 0)
+    from Order o
+    where o.deleted = false
+      and o.status = com.example.be.enums.OrderStatus.COMPLETED
+      and (:from is null or o.createdAt >= :from)
+      and (:to is null or o.createdAt < :to)
+""")
+    Long countCompletedOrdersInRange(
+            @Param("from") java.time.LocalDateTime from,
+            @Param("to") java.time.LocalDateTime to
+    );
+
+    boolean existsByCommissionRequestId(Long commissionRequestId);
+
 }
